@@ -18,7 +18,7 @@ function Dashboard() {
     try {
       setLoading(true);
       const res = await axios.get(
-        'http://localhost:5000/api/tasks',
+        '/api/tasks',
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setTasks(res.data);
@@ -53,7 +53,7 @@ function Dashboard() {
 
     try {
       await axios.post(
-        'http://localhost:5000/api/tasks',
+        '/api/tasks',
         { title, description, deadline: deadline ? new Date(deadline) : null },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -70,7 +70,7 @@ function Dashboard() {
   const deleteTask = async (id) => {
     try {
       await axios.delete(
-        `http://localhost:5000/api/tasks/${id}`,
+        `/api/tasks/${id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       fetchTasks();
@@ -82,7 +82,7 @@ function Dashboard() {
   const toggleTask = async (id) => {
     try {
       await axios.patch(
-        `http://localhost:5000/api/tasks/${id}/toggle`,
+        `/api/tasks/${id}/toggle`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
