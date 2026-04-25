@@ -27,7 +27,7 @@ const path = require('path');
 app.use(express.static(path.join(__dirname, '../frontend/build')));
 
 // Any other route should serve the React app
-app.get('*', (req, res) => {
+app.use((req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
 });
 
