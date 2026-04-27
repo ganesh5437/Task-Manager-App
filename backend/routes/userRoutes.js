@@ -3,12 +3,13 @@ const router = express.Router();
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const auth = require('../middleware/auth');
 require('dotenv').config();
 
 // 🔐 REGISTER USER
 router.post('/register', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, name } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ message: "Email and password are required" });
@@ -28,8 +29,15 @@ router.post('/register', async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    // Derive name from email if not provided
+    const userName = name || email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
     // Create new user
-    const user = new User({ email: email.toLowerCase(), password: hashedPassword });
+    const user = new User({
+      email: email.toLowerCase(),
+      password: hashedPassword,
+      name: userName
+    });
     await user.save();
 
     res.status(201).json({ message: "User Registered Successfully" });
@@ -66,13 +74,51 @@ router.post('/login', async (req, res) => {
     const token = jwt.sign(
       { id: user._id },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "7d" }
     );
 
-    res.json({ token, email: user.email });
+    res.json({
+      token,
+      email: user.email,
+      name: user.name,
+      userId: user._id
+    });
 
   } catch (err) {
     console.log("LOGIN ERROR:", err.message);
+    res.status(500).json({ message: "Server Error" });
+  }
+});
+
+// 👤 GET USER PROFILE
+router.get('/profile', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: "Server Error" });
+  }
+});
+
+// 👤 UPDATE USER PROFILE
+router.put('/profile', auth, async (req, res) => {
+  try {
+    const { name } = req.body;
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { name },
+      { new: true }
+    ).select('-password');
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json(user);
+  } catch (err) {
     res.status(500).json({ message: "Server Error" });
   }
 });
