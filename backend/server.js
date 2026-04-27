@@ -15,15 +15,15 @@ mongoose.connect(process.env.MONGO_URI)
   .catch(err => console.log(err));
 
 // Routes
-const userRoutes = require('./routes/userRoutes');
-const taskRoutes = require('./routes/taskRoutes');
-const projectRoutes = require('./routes/projectRoutes');
-const dashboardRoutes = require('./routes/dashboardRoutes');
+const authRoutes = require('./routes/authRoutes');
+const companyRoutes = require('./routes/companyRoutes');
+const requestRoutes = require('./routes/requestRoutes');
+const seedRoutes = require('./routes/seedRoutes');
 
-app.use('/api/users', userRoutes);
-app.use('/api/tasks', taskRoutes);
-app.use('/api/projects', projectRoutes);
-app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/companies', companyRoutes);
+app.use('/api/requests', requestRoutes);
+app.use('/api/seed', seedRoutes);
 
 const path = require('path');
 

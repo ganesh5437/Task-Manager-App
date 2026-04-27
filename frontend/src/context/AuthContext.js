@@ -9,31 +9,35 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
 
+  // Since we changed the auth system, if there's a token, we decode it or trust it until an API call fails
+  // Let's just trust localStorage for initial load to speed things up
   useEffect(() => {
-    if (token) {
-      axios.get('/api/users/profile', { headers: { Authorization: `Bearer ${token}` } })
-        .then(res => setUser(res.data))
-        .catch(() => { localStorage.removeItem('token'); setToken(null); })
-        .finally(() => setLoading(false));
-    } else { setLoading(false); }
+    const savedUser = localStorage.getItem('user');
+    if (token && savedUser) {
+      setUser(JSON.parse(savedUser));
+    } else {
+      setToken(null);
+      setUser(null);
+    }
+    setLoading(false);
   }, [token]);
 
   const login = (data) => {
     localStorage.setItem('token', data.token);
+    localStorage.setItem('user', JSON.stringify(data.user));
     setToken(data.token);
-    setUser({ name: data.name, email: data.email, _id: data.userId });
+    setUser(data.user);
   };
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     setToken(null);
     setUser(null);
   };
 
-  const updateUser = (data) => setUser(prev => ({ ...prev, ...data }));
-
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, token, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

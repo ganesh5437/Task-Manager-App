@@ -1,80 +1,70 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
+import Navbar from '../components/Navbar';
 
 function Register() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'user' });
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const strength = password.length === 0 ? 0 : password.length < 4 ? 1 : password.length < 8 ? 2 : 3;
-  const strengthColor = ['#ef4444', '#f59e0b', '#22c55e'][strength - 1] || '#2a2e3d';
-
-  const registerUser = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-    setError(''); setSuccess('');
-    if (password !== confirmPassword) { setError("Passwords don't match"); return; }
-    if (password.length < 4) { setError("Password must be at least 4 characters"); return; }
+    setError('');
     setLoading(true);
     try {
-      await axios.post('/api/users/register', { email, password, name });
-      setSuccess('Account created! Redirecting to login...');
-      setTimeout(() => navigate('/'), 1500);
+      await axios.post('/api/auth/register', form);
+      navigate('/');
     } catch (err) {
-      setError(err.response?.data?.message || "Registration Failed.");
-    } finally { setLoading(false); }
+      setError(err.response?.data?.message || 'Registration failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="auth-wrapper">
-      <div className="auth-left">
-        <div className="auth-brand">
-          <div className="logo">TaskFlow</div>
-          <p>Join thousands of teams managing their projects efficiently with TaskFlow.</p>
-          <div className="features">
-            <div className="feat"><div className="feat-icon">🚀</div> Get started in under 60 seconds</div>
-            <div className="feat"><div className="feat-icon">📈</div> Track progress with analytics</div>
-            <div className="feat"><div className="feat-icon">🎯</div> Stay focused on priorities</div>
-          </div>
-        </div>
-      </div>
-      <div className="auth-right">
+    <>
+      <Navbar />
+      <div className="auth-container">
         <div className="auth-card">
-          <h2>Create account</h2>
-          <p className="auth-subtitle">Start managing your projects today</p>
-          {error && <div className="error-message">{error}</div>}
-          {success && <div className="success-message">{success}</div>}
-          <form onSubmit={registerUser}>
+          <h2>Create Account</h2>
+          <p>Join our platform today</p>
+          
+          {error && <div className="error-msg">{error}</div>}
+          
+          <form onSubmit={handleRegister}>
             <div className="form-group">
               <label>Full Name</label>
-              <input placeholder="John Doe" value={name} onChange={e => setName(e.target.value)} />
+              <input type="text" value={form.name} onChange={e => setForm({...form, name: e.target.value})} required />
             </div>
             <div className="form-group">
               <label>Email Address</label>
-              <input type="email" placeholder="name@company.com" value={email} onChange={e => setEmail(e.target.value)} required />
+              <input type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} required />
             </div>
             <div className="form-group">
               <label>Password</label>
-              <input type="password" placeholder="Create a password" value={password} onChange={e => setPassword(e.target.value)} required minLength={4} />
-              {password && <div className="password-strength"><div className="bar" style={{width: `${strength*33}%`, background: strengthColor}} /></div>}
+              <input type="password" value={form.password} onChange={e => setForm({...form, password: e.target.value})} required minLength={4}/>
             </div>
             <div className="form-group">
-              <label>Confirm Password</label>
-              <input type="password" placeholder="Confirm your password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required />
+              <label>Account Type</label>
+              <select value={form.role} onChange={e => setForm({...form, role: e.target.value})}>
+                <option value="user">Candidate / User</option>
+                <option value="company_admin">Company Administrator</option>
+              </select>
             </div>
-            <button type="submit" className="btn btn-primary" style={{width:'100%',marginTop:8}} disabled={loading}>
-              {loading ? 'Creating account...' : 'Create Account'}
+            <button type="submit" className="btn btn-primary" style={{width:'100%', padding:'0.75rem', marginTop:'1rem'}} disabled={loading}>
+              {loading ? 'Creating...' : 'Sign Up'}
             </button>
           </form>
-          <p className="auth-link">Already have an account? <Link to="/">Sign in</Link></p>
+          
+          <div style={{textAlign:'center', marginTop:'1.5rem', fontSize:'0.875rem'}}>
+            Already have an account? <Link to="/">Login here</Link>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
+
 export default Register;
