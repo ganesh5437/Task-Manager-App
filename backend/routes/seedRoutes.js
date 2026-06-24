@@ -5,7 +5,7 @@ const Employee = require('../models/Employee');
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
 
-router.get('/run', async (req, res) => {
+router.post('/run', async (req, res) => {
   try {
     // 1. Clear existing data
     await Company.deleteMany({});
